@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 全屋装修设计平台 · 演示</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    #root{display:flex;flex-direction:column}
+    #loaderr{display:none;position:fixed;inset:0;z-index:999;background:#0f141a;color:#9fb0c0;
+      flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;font-family:sans-serif}
+    #loaderr h2{color:#e8edf2;margin-bottom:14px}
+    #loaderr code{background:#1d2630;padding:3px 8px;border-radius:5px;color:#7aa6ff}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="loaderr">
+    <h2>资源加载失败</h2>
+    <p>本演示需要从 CDN 加载 React 与 Three.js。<br/>请确认网络可访问，或在本目录下启动本地静态服务器后访问：</p>
+    <p style="margin-top:14px"><code>python3 -m http.server 8080</code> &rarr; 打开 <code>http://localhost:8080</code></p>
+  </div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    setTimeout(function(){
+      if (!window.React || !window.ReactDOM) {
+        document.getElementById('loaderr').style.display = 'flex';
+      }
+    }, 2500);
+  </script>
+</body>
+</html>
