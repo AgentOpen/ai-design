@@ -1,0 +1,5 @@
+*.md
+serve.sh
+fetch-vendor.sh
+.git
+.DS_Store

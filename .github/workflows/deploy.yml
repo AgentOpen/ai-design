@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+# 触发条件：推到 main 分支或手动触发
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+# 权限：允许写 Pages 和 OIDC
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 并发：同一时间只跑一次部署
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          # 自动启用 Pages，避免「Get Pages site failed: Not Found」
+          # 前提：仓库 Settings → Actions → Workflow permissions = "Read and write"
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 站点根目录就是仓库根目录
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

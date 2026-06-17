@@ -1,0 +1,12 @@
+# =====================================================================
+# docker-compose.yml — 一键启动
+# 用法: docker compose up -d  →  访问 http://localhost:8080
+# =====================================================================
+services:
+  web:
+    build: .
+    image: ai-home-design:latest
+    container_name: ai-home-design
+    ports:
+      - "8080:80"
+    restart: unless-stopped

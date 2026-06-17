@@ -3,37 +3,225 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI 全屋装修设计平台 · 演示</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="AI 全屋装修设计平台 — 8 步设计闭环演示" />
+  <title>AI 全屋装修设计平台</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
   <style>
-    #root{display:flex;flex-direction:column}
-    #loaderr{display:none;position:fixed;inset:0;z-index:999;background:#0f141a;color:#9fb0c0;
-      flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;font-family:sans-serif}
-    #loaderr h2{color:#e8edf2;margin-bottom:14px}
-    #loaderr code{background:#1d2630;padding:3px 8px;border-radius:5px;color:#7aa6ff}
+    #root{display:flex;flex-direction:column;height:100%}
+    #boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:#f5f6f8;color:#5a6678;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+      font-size:14px;text-align:center;padding:40px;z-index:1000}
+    #boot .sp{width:32px;height:32px;border:3px solid #e5e8ed;border-top-color:#2563eb;
+      border-radius:50%;animation:bsp 1s linear infinite;margin-bottom:16px}
+    @keyframes bsp{to{transform:rotate(360deg)}}
+    #boot .status{color:#8a96a8;font-size:12px;margin-top:8px;font-family:'SF Mono',ui-monospace,monospace}
+    #boot h3{color:#1a2233;font-weight:600;margin-bottom:6px;font-size:16px}
+    #boot.error .sp{display:none}
+    #boot.error h3{color:#dc2626}
+    #boot pre{background:#fff;border:1px solid #e5e8ed;border-radius:6px;padding:12px 16px;
+      margin-top:16px;text-align:left;font-size:11px;color:#5a6678;max-width:560px;
+      max-height:200px;overflow:auto;font-family:'SF Mono',monospace;line-height:1.6}
+    #boot .retry{margin-top:16px;background:#2563eb;color:#fff;border:none;padding:9px 22px;
+      border-radius:6px;cursor:pointer;font-size:13px;font-weight:600}
+    #boot .retry:hover{background:#1d4ed8}
+    #boot code{background:#fff;border:1px solid #e5e8ed;padding:2px 6px;border-radius:4px;color:#2563eb;font-size:11px}
   </style>
 </head>
 <body>
   <div id="root"></div>
-  <div id="loaderr">
-    <h2>资源加载失败</h2>
-    <p>本演示需要从 CDN 加载 React 与 Three.js。<br/>请确认网络可访问，或在本目录下启动本地静态服务器后访问：</p>
-    <p style="margin-top:14px"><code>python3 -m http.server 8080</code> &rarr; 打开 <code>http://localhost:8080</code></p>
+  <div id="boot">
+    <div class="sp"></div>
+    <h3 id="bootTitle">正在加载 AI 全屋装修设计平台</h3>
+    <div class="status" id="bootStatus">准备依赖...</div>
+    <pre id="bootLog" style="display:none"></pre>
+    <button class="retry" id="bootRetry" style="display:none" onclick="location.reload()">重新加载</button>
   </div>
 
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-
-  <script src="data.js"></script>
-  <script src="app.js"></script>
-
   <script>
-    setTimeout(function(){
-      if (!window.React || !window.ReactDOM) {
-        document.getElementById('loaderr').style.display = 'flex';
+  (function(){
+    'use strict';
+    var bootStatus = document.getElementById('bootStatus');
+    var bootTitle  = document.getElementById('bootTitle');
+    var bootLog    = document.getElementById('bootLog');
+    var bootRetry  = document.getElementById('bootRetry');
+    var bootEl     = document.getElementById('boot');
+    var logs = [];
+
+    function setStatus(s){ if (bootStatus) bootStatus.textContent = s; }
+    function logLine(s){
+      logs.push(s);
+      if (bootLog){ bootLog.textContent = logs.join('\n'); bootLog.style.display='block'; }
+      console.log('[boot]', s);
+    }
+    function showError(title, detail){
+      bootEl.classList.add('error');
+      bootTitle.textContent = title;
+      bootStatus.textContent = detail || '';
+      bootRetry.style.display = 'inline-block';
+    }
+
+    // 检测协议：file:// 会阻止脚本加载（除 Safari 外多数浏览器）
+    if (location.protocol === 'file:'){
+      showError('请通过 HTTP 服务访问，而不是直接打开文件',
+        '浏览器在 file:// 协议下会阻止跨文件加载脚本。');
+      logLine('当前协议: file://');
+      logLine('');
+      logLine('解决方法（任选一种）：');
+      logLine('  1. 在项目目录运行: bash serve.sh');
+      logLine('  2. 或运行: python3 -m http.server 8080');
+      logLine('  3. 然后访问 http://localhost:8080');
+      bootRetry.style.display = 'none';
+      return;
+    }
+
+    // 全局错误捕获
+    window.addEventListener('error', function(e){
+      logLine('JS Error: ' + (e.message || e.error || 'unknown') + (e.filename? ' @ '+e.filename.split('/').pop():'') + (e.lineno?':'+e.lineno:''));
+      if (!window.__APP_BOOTED__){
+        showError('加载失败：脚本错误',
+          '请打开浏览器控制台查看详细错误，或点下方按钮重试。');
       }
-    }, 2500);
+    });
+
+    // 多源 CDN，按可用性顺序
+    var SOURCES = {
+      react: [
+        'https://unpkg.com/react@18.2.0/umd/react.production.min.js',
+        'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js'
+      ],
+      reactDom: [
+        'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js',
+        'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'
+      ],
+      three: [
+        'https://unpkg.com/three@0.160.0/build/three.min.js',
+        'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js'
+      ]
+    };
+
+    // 本地优先：先试 vendor 路径，再走 CDN
+    function localPath(name){ return 'vendor/' + name; }
+    var LOCAL_NAMES = {
+      react: 'react.production.min.js',
+      reactDom: 'react-dom.production.min.js',
+      three: 'three.min.js'
+    };
+
+    function loadScriptOnce(src, timeoutMs){
+      return new Promise(function(resolve, reject){
+        var s = document.createElement('script');
+        var done = false;
+        var timer = setTimeout(function(){
+          if (done) return;
+          done = true; s.onload = s.onerror = null;
+          reject(new Error('timeout: '+src));
+        }, timeoutMs || 8000);
+        s.src = src;
+        s.crossOrigin = 'anonymous';
+        s.onload = function(){
+          if (done) return;
+          done = true; clearTimeout(timer);
+          resolve(src);
+        };
+        s.onerror = function(){
+          if (done) return;
+          done = true; clearTimeout(timer);
+          // 移除失败的 script 标签，避免堆积
+          if (s.parentNode) s.parentNode.removeChild(s);
+          reject(new Error('failed: '+src));
+        };
+        document.head.appendChild(s);
+      });
+    }
+
+    // 依次尝试多个源
+    function tryUrls(urls){
+      var i = 0;
+      function next(){
+        if (i >= urls.length) return Promise.reject(new Error('all sources failed'));
+        var url = urls[i++];
+        return loadScriptOnce(url).catch(function(e){
+          logLine('  ✗ ' + shortUrl(url));
+          return next();
+        }).then(function(ok){
+          if (ok){ logLine('  ✓ ' + shortUrl(ok)); return ok; }
+        });
+      }
+      return next();
+    }
+    function shortUrl(u){
+      try { return u.replace(/^https?:\/\//,'').split('/')[0] + '/...' + u.split('/').pop(); }
+      catch(e){ return u; }
+    }
+
+    // 加载一个库：本地 → 多 CDN
+    function loadLib(key, globalName){
+      setStatus('加载 ' + globalName + '...');
+      logLine('[' + globalName + '] 尝试本地 vendor/');
+      return loadScriptOnce(localPath(LOCAL_NAMES[key]), 3000)
+        .then(function(p){ logLine('  ✓ ' + p); return p; })
+        .catch(function(){
+          logLine('  · 本地不存在，回退 CDN');
+          return tryUrls(SOURCES[key]);
+        })
+        .then(function(){
+          if (!window[globalName]){
+            throw new Error(globalName + ' 加载后仍未定义');
+          }
+          return true;
+        });
+    }
+
+    // 加载本地脚本（必须存在）
+    function loadLocal(path){
+      setStatus('加载 ' + path);
+      return loadScriptOnce(path, 6000).then(function(){
+        logLine('  ✓ ' + path);
+      });
+    }
+
+    // 启动流程
+    Promise.resolve()
+      .then(function(){ return loadLib('react', 'React'); })
+      .then(function(){ return loadLib('reactDom', 'ReactDOM'); })
+      .then(function(){ return loadLib('three', 'THREE'); })
+      .then(function(){ return loadLocal('assets/js/data.js'); })
+      .then(function(){
+        if (!window.AIHome) throw new Error('data.js 加载后 window.AIHome 未定义');
+      })
+      .then(function(){ return loadLocal('assets/js/canvas.js'); })
+      .then(function(){
+        if (!window.AICanvas) throw new Error('canvas.js 加载后 window.AICanvas 未定义');
+      })
+      .then(function(){ return loadLocal('assets/js/scene3d.js'); })
+      .then(function(){
+        if (!window.AIScene3D) throw new Error('scene3d.js 加载后 window.AIScene3D 未定义');
+      })
+      .then(function(){ return loadLocal('assets/js/app.js'); })
+      .then(function(){
+        window.__APP_BOOTED__ = true;
+        setStatus('就绪');
+        // 应用挂载到 #root 后，隐藏 boot
+        setTimeout(function(){
+          if (document.querySelector('#root > *')){
+            bootEl.style.display = 'none';
+          } else {
+            // app 没成功渲染，留 boot 显示提示
+            showError('应用未正确渲染',
+              '所有脚本加载完成，但根组件未渲染。请查看控制台。');
+          }
+        }, 100);
+      })
+      .catch(function(err){
+        console.error('[boot] 启动失败:', err);
+        logLine('FATAL: ' + (err.message || err));
+        showError('加载失败',
+          '请检查网络（CDN 可能被墙），或参考 DEPLOYMENT.md 用 fetch-vendor.sh 离线部署。');
+      });
+  })();
   </script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志
+*.log
+npm-debug.log*
+
+# 临时
+.tmp/
+.cache/
+
+# Node（如果未来加入构建步骤）
+node_modules/
+
+# vendor 是可选的本地依赖，提交与否由你决定
+# 如果你希望站点不依赖外网 CDN，运行 fetch-vendor.sh 后把 vendor/*.js 一起提交
+# 默认 vendor/README.txt 保留作为占位
