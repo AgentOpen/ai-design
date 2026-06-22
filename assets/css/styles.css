@@ -170,9 +170,10 @@ input,select{font-family:inherit}
 .quote-total .big{font-size:38px;font-weight:800;font-family:var(--mono);color:var(--primary);letter-spacing:-1px}
 .quote-total .lbl{color:var(--ink-3);font-size:12px}
 .quote-total .sub{font-family:var(--mono);color:var(--amber);font-size:16px;font-weight:700}
-table.quote{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+table.quote{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;table-layout:fixed}
 table.quote th{text-align:left;color:var(--ink-3);font-weight:600;padding:10px 12px;background:var(--panel-2);border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-table.quote td{padding:10px 12px;border-bottom:1px solid var(--line-soft)}
+table.quote th.num{text-align:right}
+table.quote td{padding:10px 12px;border-bottom:1px solid var(--line-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 table.quote td.num{font-family:var(--mono);text-align:right}
 table.quote tr:last-child td{border-bottom:none}
 table.quote tr:hover td{background:var(--panel-2)}
